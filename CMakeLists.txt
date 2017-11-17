@@ -10,3 +10,6 @@ add_executable(lab1 ${SOURCE_FILES})
 
 set(SOURCE_FILES lab2.cpp)
 add_executable(lab2 ${SOURCE_FILES})
+
+set(SOURCE_FILES lab3.c)
+add_executable(lab3 ${SOURCE_FILES})

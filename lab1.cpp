@@ -3,7 +3,6 @@
 #include<unistd.h>
 #include<string.h>
 #include<sys/wait.h>
-#include <bits/signum.h>
 
 #define size 50
 
