@@ -17,7 +17,7 @@ static volatile int num = 0;
 unsigned int nsems = 1;
 sem_t s1, s2;
 int ret1 = sem_init(&s1, 0, nsems);
-int ret2 = sem_init(&s1, 0, nsems);
+int ret2 = sem_init(&s2, 0, 0);
 
 void add() {
     while (num++ < 100) {
