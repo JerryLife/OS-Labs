@@ -114,4 +114,7 @@ int main() {
 
         fclose(hRead);
     }
+
+    sem_close(data);
+    sem_close(space);
 }
