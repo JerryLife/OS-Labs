@@ -52,11 +52,9 @@ void print_info(fs::path path) {
     string group = string(gp->gr_name);
 
     // size of file
-    size_t size_of_file = 0;
-    if (fs::is_regular_file(path))
-        size_of_file = fs::file_size(path);
-    else if (fs::is_directory(path))
-        size_of_file = get_dir_size(path);
+    struct stat stat_buf;
+    stat(path.string().c_str(), &stat_buf);
+    size_t size_of_file = stat_buf.st_size;
 
     // date of last modification
     time_t last_modified_time = fs::last_write_time(path);
@@ -129,6 +127,9 @@ void print_dir(string dir) {
         string path = dir_paths[dir_paths.size() - 1];
         dir_paths.pop_back();
         printf("\n%s:\n", path.c_str());
+        struct stat st;
+        stat(".", &st);
+        printf("total %ld\n", get_dir_size(path));
         print_dir(path);
     }
 }
