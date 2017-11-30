@@ -19,6 +19,9 @@ set(CMAKE_C_STANDARD 99)
 set(SOURCE_FILES lab3.c)
 add_executable(lab3 ${SOURCE_FILES})
 
+set(SOURCE_FILES ghy.c)
+add_executable(ghy ${SOURCE_FILES})
+
 find_package(Boost 1.60.0 COMPONENTS filesystem system REQUIRED)
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 TARGET_LINK_LIBRARIES(lab4 LINK_PUBLIC ${Boost_LIBRARIES} )

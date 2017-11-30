@@ -15,8 +15,11 @@ size_t get_dir_size(fs::path path) {
 
     size_t size = 0;
 
-    if (fs::is_regular_file(path))
-        return fs::file_size(path);
+    if (!fs::is_directory(path)) {
+        struct stat info;
+        lstat(path.string().c_str(), &info);
+        return (size_t)info.st_size;
+    }
     else {
         fs::directory_iterator dir_itr, dir_itr_end;
         for (dir_itr = fs::directory_iterator(path);
@@ -24,7 +27,9 @@ size_t get_dir_size(fs::path path) {
             if (fs::is_directory(dir_itr->path())) {
                 size += get_dir_size(dir_itr->path());
             } else {
-                size += fs::file_size(dir_itr->path());
+                struct stat info;
+                lstat(dir_itr->path().string().c_str(), &info);
+                size += info.st_size;
             }
         }
         return size;
@@ -32,6 +37,9 @@ size_t get_dir_size(fs::path path) {
 }
 
 void print_info(fs::path path) {
+    struct stat info;
+    lstat(path.string().c_str(), &info);
+
     // file name
     string cur_file = path.string();
     cur_file = cur_file.substr(2, cur_file.size());
@@ -41,27 +49,24 @@ void print_info(fs::path path) {
     unsigned perm = s.permissions();
 
     // number of hardlinks
-    unsigned nlink = (unsigned) fs::hard_link_count(path);
+    unsigned nlink = (unsigned)info.st_nlink;
 
     // owner and group of file
-    struct stat info;
-    stat(cur_file.c_str(), &info);
     struct passwd *pw = getpwuid(info.st_uid);
     struct group *gp = getgrgid(info.st_gid);
     string owner = string(pw->pw_name);
     string group = string(gp->gr_name);
 
     // size of file
-    struct stat stat_buf;
-    stat(path.string().c_str(), &stat_buf);
-    size_t size_of_file = stat_buf.st_size;
+    size_t size_of_file = (size_t)info.st_size;
 
     // date of last modification
-    time_t last_modified_time = fs::last_write_time(path);
+    time_t last_modified_time = info.st_mtime;
 
     /////////////////// Format ////////////////////////////////
     // print permissions
-    printf(fs::is_directory(path) ? "d" : "-");
+    printf(fs::is_directory(path) ? "d" :
+           fs::symlink_status(path).type() == fs::symlink_file ? "l" : "-");
     printf((perm & fs::owner_read) ? "r" : "-");
     printf((perm & fs::owner_write) ? "w" : "-");
     printf((perm & fs::owner_exe) ? "x" : "-");
@@ -101,7 +106,8 @@ void print_dir(string dir) {
 
     static vector<string> dir_paths;
     
-    if (fs::is_regular_file(dir)) {
+    if (fs::is_regular_file(dir) ||
+            fs::symlink_status(dir).type() == fs::symlink_file) {
         fs::path p{dir};
         print_info(p);
         return;
@@ -128,8 +134,8 @@ void print_dir(string dir) {
         dir_paths.pop_back();
         printf("\n%s:\n", path.c_str());
         struct stat st;
-        stat(".", &st);
-        printf("total %ld\n", get_dir_size(path));
+        lstat(".", &st);
+        // printf("total %ld\n", get_dir_size(path));
         print_dir(path);
     }
 }
