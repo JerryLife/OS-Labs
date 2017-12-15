@@ -6,7 +6,9 @@
 #include "boost/filesystem.hpp"
 #include <pwd.h>
 #include <grp.h>
+#include <time.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -49,7 +51,7 @@ void print_info(fs::path path) {
     unsigned perm = s.permissions();
 
     // number of hardlinks
-    unsigned nlink = (unsigned)info.st_nlink;
+    unsigned nlink = (unsigned) info.st_nlink;
 
     // owner and group of file
     struct passwd *pw = getpwuid(info.st_uid);
@@ -58,7 +60,7 @@ void print_info(fs::path path) {
     string group = string(gp->gr_name);
 
     // size of file
-    size_t size_of_file = (size_t)info.st_size;
+    size_t size_of_file = (size_t) info.st_size;
 
     // date of last modification
     time_t last_modified_time = info.st_mtime;
@@ -87,8 +89,10 @@ void print_info(fs::path path) {
     printf("%7lu", size_of_file);
 
     // print current time
-    string str_time = ctime(&last_modified_time);
+    char buf[100];
+    string str_time(ctime_r(&last_modified_time, buf));
     printf(" %s", str_time.substr(0, str_time.size() - 1).c_str()); // delete '\n'
+    // printTime(&info);
 
     // print file name
     string file_name;
@@ -126,6 +130,7 @@ void print_dir(string dir) {
         if (fs::is_directory(itr->path())) {
             dir_paths.push_back(itr->path().string());
         }
+
     }
 
     // recursively print directories
@@ -134,7 +139,8 @@ void print_dir(string dir) {
         dir_paths.pop_back();
         printf("\n%s:\n", path.c_str());
         struct stat st;
-        lstat(".", &st);
+        if (lstat(".", &st) < 0)
+            continue;
         // printf("total %ld\n", get_dir_size(path));
         print_dir(path);
     }
