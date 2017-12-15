@@ -43,7 +43,12 @@ void print_info(char *path) {
     time_t last_modified_time = info.st_mtime;
 
     // print permissions
-    printf( (S_ISDIR(perm)) ? "d" : S_ISLNK(perm) ? "l" : "-");
+    // printf( (S_ISDIR(perm)) ? "d" : S_ISLNK(perm) ? "l" : "-");
+    if (S_ISDIR(perm))
+        printf("%sd", GREEN);
+    else if (S_ISLNK(perm))
+        printf("%sl", BLUE);
+    else printf("%s-", BLUE);
     printf( (perm & S_IRUSR) ? "r" : "-");
     printf( (perm & S_IWUSR) ? "w" : "-");
     printf( (perm & S_IXUSR) ? "x" : "-");
@@ -67,6 +72,7 @@ void print_info(char *path) {
     char format_time[50];
     char *time = ctime(&last_modified_time);
     memcpy(format_time, time, strlen(time) - 1);
+    memcpy(format_time + strlen(time) - 1, ".", 1);
     printf(" %s", format_time);
 
     // print file name
@@ -77,6 +83,8 @@ void print_info(char *path) {
     else
         strcpy(name, path);
     printf(" %s\n", name);
+
+    printf("%s", NORMAL_COLOR);
 }
 
 void print_dir(char *path) {
@@ -124,6 +132,10 @@ void print_dir(char *path) {
 }
 
 int main(int argc, char **argv) {
+    if (argc == 1) {
+        print_dir(".");
+        return 0;
+    }
     printf("%s\n", NORMAL_COLOR);
     print_dir(argv[1]);
     printf("%s\n", NORMAL_COLOR);
